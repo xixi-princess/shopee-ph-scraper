@@ -1,0 +1,42 @@
+name: Shopee PH Scraper
+
+on:
+  workflow_dispatch:
+    inputs:
+      keyword:
+        description: '搜索关键词'
+        required: true
+        default: 'phone'
+      pages:
+        description: '爬取页数'
+        required: true
+        default: '3'
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests pandas matplotlib seaborn
+        
+    - name: Run scraper
+      run: |
+        python shopee_ph_scraper.py "${{ github.event.inputs.keyword }}" --pages ${{ github.event.inputs.pages }} --output output
+        
+    - name: Upload results
+      uses: actions/upload-artifact@v4
+      with:
+        name: shopee-data-${{ github.event.inputs.keyword }}-${{ github.run_id }}
+        path: output/
+        retention-days: 30
